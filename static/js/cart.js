@@ -10,13 +10,42 @@ for(let i =0; i<updateButtons.length;i++){
         var action = this.dataset.action
         console.log("user"+user)
         if(user=== `AnonymousUser`){
-            console.log('not logged in')
+           // console.log('not logged in')
+           addCookieItem(productId,action)
         }
         else{
             updateUserOrder(productId,action)
         }
         console.log("proudctId "+productId);
     })
+}
+
+function addCookieItem(productId,action){
+
+    if(action == "add"){
+        // check if that productId doesnt exists
+        if(cart[productId] == undefined){
+            ///create it
+            cart[productId] = {'quantity':1}
+
+        }else{
+            cart[productId]['quantity']+=1;
+        }
+    }
+
+    if(action == 'remove'){
+        cart[productId]['quantity'] -=1;
+
+        if(cart[productId]['quantity']<=0){
+            console.log("remove item");
+
+            delete cart[productId]
+        }
+    }
+
+    console.log(cart);
+    document.cookie = 'cart='+JSON.stringify(cart) + ";domian=;path=/"
+
 }
 
 function updateUserOrder(productId,action){

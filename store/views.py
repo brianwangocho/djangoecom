@@ -34,6 +34,11 @@ def  cart(request):
         cartItems = order.get_cart_items
     else:
         items =[]
+        # if the cookie doesnt exist try catch
+        try:
+             cart = json.loads(request.COOKIES['cart']
+        except:
+            cart={}
         order = {'get_cart_total':0,'get_cart_items':0}
         cartItems = order['get_cart_items']
     context={'items':items,'order':order,'cartItems':cartItems}
