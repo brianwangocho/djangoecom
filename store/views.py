@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 import datetime
 from .models import *
+from . util import cookieCart,cartData
 import json
 
 
@@ -9,38 +10,19 @@ import json
 
 def store(request):
     # check if user is authenticated
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        # you either find or create an order
-        order, created = Order.objects.get_or_create(customer=customer, complete=False)
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
-    else:
-        items =[]
-        order = {'get_cart_total':0,'get_cart_items':0}
-        cartItems = order['get_cart_items']
+    data = cartData(request)
+    cartItems = data['cartItems']
     products = Product.objects.all()
     context={'products':products,'cartItems':cartItems}
     return render(request,'store/store.html',context)
 
 
 def  cart(request):
+    data = cartData(request)
+    cartItems = data['cartItems']
+    items = data['items']
+    order = data['order']
 
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        # you either find or create an order
-        order, created = Order.objects.get_or_create(customer=customer, complete=False)
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
-    else:
-        items =[]
-        # if the cookie doesnt exist try catch
-        try:
-            cart = json.loads(request.COOKIES['cart'])
-        except:
-              cart={}
-    order = {'get_cart_total':0,'get_cart_items':0}
-    cartItems = order['get_cart_items']
     context={'items':items,'order':order,'cartItems':cartItems}
     return render(request,'store/cart.html',context)
 
@@ -48,16 +30,13 @@ def  cart(request):
 
 
 def  checkout(request):
-    # check if user is authenticated
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        # you either find or create an order
-        order, created = Order.objects.get_or_create(customer=customer, complete=False)
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
-    else:
-        items =[]
-        order = {'get_cart_total':0,'get_cart_items':0,'shipping':False}
+    data = cartData(request)
+    cartItems = data['cartItems']
+    items = data['items']
+    order = data['order']
+
+
+  
     context={'items':items,'order':order,'cartItems':cartItems}
     return render(request,'store/checkout.html',context)
 
