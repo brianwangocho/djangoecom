@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 import datetime
 from .models import *
-from . util import cookieCart,cartData
+from . util import cookieCart,cartData,guestOrder
 import json
 
 
@@ -76,22 +76,24 @@ def processOrder(request):
     if request.user.is_authenticated:
         customer = request.user.customer
         order, created = Order.objects.get_or_create(customer=customer, complete=False)
-        total = float(data['form']['total'])
-        order.transaction_id = transaction_id  
-        # check if the total from the front end is equals to total from backend
-        if total == order.get_cart_total: 
-            order.complete = True
-        order.save()
-        print(order.shipping)
+       
+    else:
+      customer, order = guestOrder()
+        
 
-        if order.shipping == True:
-            ShippingAddress.objects.create(
-                customer=customer,
-                order=order,
-                address=data['shippingInfo']['address'],
-                city=data['shippingInfo']['city'],
-                county=data['shippingInfo']['county']
-            )
-
+    total = float(data['form']['total'])
+    order.transaction_id = transaction_id  
+     # check if the total from the front end is equals to total from backend
+    if total == order.get_cart_total: 
+        order.complete = True
+    order.save()
+    if order.shipping == True:
+        ShippingAddress.objects.create(
+            customer=customer,
+            order=order,
+            address=data['shippingInfo']['address'],
+            city=data['shippingInfo']['city'],
+            county=data['shippingInfo']['county']
+        )
     return JsonResponse('payment Complete', safe=False)
 
