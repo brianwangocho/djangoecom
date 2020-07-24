@@ -1,8 +1,12 @@
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.http import HttpResponse
+import requests
 import datetime
 from .models import *
 import json
+from . mpesaCredentials import MpesaAccessToken,MpesaPassword
+
 
 
 # Create your views here.
@@ -110,4 +114,37 @@ def processOrder(request):
             )
 
     return JsonResponse('payment Complete', safe=False)
+
+
+def LipaNaMpesa(request):
+    access_token = MpesaAccessToken(request)
+    print(" the access token"+str(access_token))
+    api_url = "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"
+    headers = {"Authorization": "Bearer %s" % access_token}
+    data =      {
+                "ShortCode": "654321",
+                "CommandID": "CustomerPayBillOnline",
+                "Amount": "100",
+                "Msisdn": "0704687633",
+                "BillRefNumber": "0704687633"
+                }
+    # data = {
+    #         "BusinessShortCode":MpesaPassword.Business_short_code,
+    #         "Password":MpesaPassword.decode_password,
+    #         "Timestamp":MpesaPassword.lipa_time,
+    #         "shortCode":"123456",
+    #         "Amount": 1,
+    #         "PartyA": 254704687633,
+    #         "PartyB": MpesaPassword.Business_short_code,
+    #         "PhoneNumber": 254704687633,
+    #         "CallBackURL": "https://sandbox.safaricom.co.ke/mpesa/",
+    #         "AccountReference": "Wangocho",
+    #         "TransactionDesc": "Lipa wangocho"     
+    # }
+    response = requests.post(api_url, json=data, headers=headers)
+    print(response.text)
+    return HttpResponse('success')
+
+    
+
 
